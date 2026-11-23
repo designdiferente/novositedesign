@@ -317,7 +317,7 @@
   }
   video::-webkit-media-controls-start-playback-button, video::-webkit-media-controls-overlay-play-button, video::-webkit-media-controls { display: none !important; -webkit-appearance: none; }
   .media video { pointer-events: none; }
-  .drag-hint { position: absolute; z-index: 3; top: clamp(14px, 2vw, 26px); left: 50%; transform: translateX(-50%); margin: 0; display: inline-flex; align-items: center; gap: 10px; max-width: 92%; color: var(--grafite); font-size: .85rem; line-height: 1.3; text-align: center; pointer-events: none; opacity: .85; }
+  .drag-hint { position: absolute; z-index: 3; bottom: clamp(14px, 2vw, 26px); left: 50%; transform: translateX(-50%); margin: 0; display: inline-flex; align-items: center; gap: 10px; max-width: 92%; color: var(--grafite); font-size: .85rem; line-height: 1.3; text-align: center; pointer-events: none; opacity: .85; }
   .drag-hint svg { flex: none; }
   @media (prefers-reduced-motion: no-preference) { .drag-hint svg { animation: dragNudge 2.6s ease-in-out infinite; } }
   @keyframes dragNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
@@ -357,7 +357,7 @@
       <div class="stage" data-cursor="Arrastar">
         <div class="glow" id="glow"></div>
         <canvas id="pgl" aria-label="Galeria 3D de projetos. Arraste para os lados para navegar e clique em um projeto para abrir."></canvas>
-        <p class="drag-hint" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg><span>Arraste e confira alguns de nossos trabalhos!</span></p>
+        <p class="drag-hint" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg><span>Arraste e confira alguns de nossos trabalhos! Toque em um para ver mais.</span></p>
         <p id="loading" class="lab">Preparando a galeria</p>
         <div class="pmeta idle" id="meta"><span id="count">01 / 08</span><strong id="name"></strong><span id="cat"></span></div>
         <div class="dots" id="dots"></div>
@@ -924,8 +924,17 @@
     function fill() { var need = wrap.clientWidth * 2 + 400, w = 0; items.forEach(function (e) { w += e._w || (e._w = itemW(e)); }); while (w < need && items.length < 80) { addOne(); var e = items[items.length - 1]; e._w = (e.width || 80) + gap() * 2; if (e.tagName === 'SPAN') e._w = e.getBoundingClientRect().width + gap() * 2; w += e._w; } }
     fill(); window.addEventListener('resize', function () { items.forEach(function (e) { e.style.margin = '0 ' + gap() + 'px'; e._w = (e.width || 80) + gap() * 2; }); fill(); });
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { onscreen = es[0].isIntersecting; last = 0; }).observe(wrap);
-    (function loop(t) { requestAnimationFrame(loop); if (!onscreen || reduce) { last = t; return; } var dt = last ? Math.min(0.05, (t - last) / 1000) : 0; last = t; x += dt * 60;
+    var down = false, px = 0, pt = 0, vel = 0, extra = 0;
+    wrap.style.touchAction = 'pan-y'; wrap.style.cursor = 'grab'; wrap.style.userSelect = 'none'; wrap.style.webkitUserSelect = 'none';
+    wrap.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    wrap.addEventListener('pointerdown', function (e) { down = true; px = e.clientX; pt = performance.now(); vel = 0; extra = 0; wrap.style.cursor = 'grabbing'; });
+    window.addEventListener('pointermove', function (e) { if (!down) return; var n = performance.now(), dx = e.clientX - px, dt = Math.max(8, n - pt); px = e.clientX; pt = n; x -= dx; vel = vel * 0.6 + (-dx / dt * 1000) * 0.4; });
+    function up() { if (!down) return; down = false; wrap.style.cursor = 'grab'; extra = Math.max(-1600, Math.min(1600, vel)); }
+    window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+    (function loop(t) { requestAnimationFrame(loop); if (!onscreen || reduce) { last = t; return; } var dt = last ? Math.min(0.05, (t - last) / 1000) : 0; last = t;
+      if (!down) { x += (60 + extra) * dt; extra *= Math.exp(-dt * 3); }
       while (items.length && x >= items[0]._w) { var f = items.shift(); x -= f._w; belt.removeChild(f); items.push(f); belt.appendChild(f); }
+      while (items.length && x < 0) { var l = items.pop(); x += l._w; belt.removeChild(l); items.unshift(l); belt.insertBefore(l, belt.firstChild); }
       belt.style.transform = 'translate3d(' + (-x).toFixed(1) + 'px,0,0)'; })(0);
   })();
 
