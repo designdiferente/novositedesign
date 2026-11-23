@@ -104,7 +104,7 @@
   .belt-wrap { overflow: hidden; height: 84px; display: flex; align-items: center; }
   .belt { display: flex; flex: none; align-items: center; white-space: nowrap; animation: belt 80s linear infinite; }
   .belt span { padding: 0 34px; font-family: var(--font-display); font-weight: 700; font-size: 2rem; letter-spacing: -.02em; }
-  .belt img { flex: none; margin: 0 54px; mix-blend-mode: multiply; }
+  .belt img { flex: none; margin: 0 54px; }
   .belt i { display: none; }
   @keyframes belt { to { transform: translateX(-50%); } }
 
@@ -310,6 +310,11 @@
   @media (max-width: 900px) { .btn-cli { padding: 11px 16px; gap: 8px; font-size: .9rem; } }
   .btn-cli svg { transition: transform .45s var(--out); }
   .btn-cli:hover, .btn-cli:focus-visible { background: var(--cobalto); color: #fff; transform: translateY(-2px); } .btn-cli:hover svg { transform: translate(3px, -3px); }
+  @media (pointer: coarse), (max-width: 900px) {
+    .grain { display: none; }
+    .svi { box-shadow: none; will-change: auto; }
+    .svp img { will-change: auto; }
+  }
 </style>
 </head>
 <body>
@@ -1121,8 +1126,8 @@
   function noGL() { $('loading').textContent = 'Este navegador não abriu a galeria 3D.'; }
   if (!window.THREE) { noGL(); return; }
   var renderer;
-  try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); } catch (e) { noGL(); return; }
   var MOB = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || window.innerWidth < 820;
+  try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !MOB, alpha: true, powerPreference: 'high-performance' }); } catch (e) { noGL(); return; }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MOB ? 1.25 : 1.75));
   renderer.outputEncoding = THREE.sRGBEncoding; renderer.setClearColor(0x000000, 0);
   var ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
@@ -1133,7 +1138,7 @@
   mirror.position.y = FY; mirror.scale.set(1, -1, 1);
 
   /* ----- luz e sombra reais ----- */
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = MOB ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
   scene.add(new THREE.HemisphereLight(0xffffff, 0xd9d2c4, 0.5));
   var fillL = new THREE.DirectionalLight(0xfff4ea, 0.26); fillL.position.set(0.5, 1.2, 10); scene.add(fillL);
   var key = new THREE.DirectionalLight(0xffffff, 0.5); key.position.set(-5, 8, 3.5); key.castShadow = true; scene.add(key, key.target);
@@ -1459,6 +1464,7 @@
   var prev = performance.now(), mouseSmooth = new THREE.Vector2();
   function frame(now) {
     requestAnimationFrame(frame);
+    if (MOB && now - prev < 30) return;
     var dt = Math.min(0.05, (now - prev) / 1000); prev = now; var tt = now / 1000;
     if (!galVisible && panelOpen < 0) return;
     pos += (target - pos) * (1 - Math.exp(-dt * 7.5));
