@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://use.typekit.net" crossorigin>
 <link rel="preconnect" href="https://p.typekit.net" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link id="tk" rel="stylesheet" href="https://use.typekit.net/jib5myk.css" media="print" onload="this.media='all'">
+<link id="tk" rel="stylesheet" href="https://use.typekit.net/jib5myk.css">
 <noscript><link rel="stylesheet" href="https://use.typekit.net/jib5myk.css"><style>html.is-loading, html.is-loading body { overflow: auto; } #veil { display: none; }</style></noscript>
 <style>
   :root {
@@ -388,12 +388,12 @@
   /* Compatível com o código antigo (task/done/set). Só as fontes seguram a abertura: vídeo e galeria carregam depois, sem travar. */
   window.DDLoader = { task: function () {}, done: function () {}, set: function () {}, restart: restart };
 
-  /* Fontes da Adobe: esperadas no máximo 1 s; depois o site abre com a fonte reserva e troca quando chegar */
+  /* Fontes da Adobe: esperadas no máximo 2,8 s; depois o site abre com a fonte reserva e troca quando chegar */
   var l = document.getElementById('tk');
   function ok() { fontsOk = true; }
   function go() { if (!document.fonts || !document.fonts.load) return ok(); Promise.all([document.fonts.load('700 40px "obviously"'), document.fonts.load('500 16px "forma-djr-text"')]).then(ok, ok); }
   if (l) { l.addEventListener('load', go); l.addEventListener('error', ok); if (l.sheet) go(); } else ok();
-  setTimeout(ok, 1000);
+  setTimeout(ok, 2800);
 
   if (seen) { /* quem já viu a abertura nesta sessão entra direto */
     veil.style.display = 'none'; done = true; lifting = true;
