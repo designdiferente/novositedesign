@@ -576,7 +576,7 @@
     function itemW(e) { return e.getBoundingClientRect().width + gap() * 2; }
     var idx = 0;
     function addOne() { var e = mk(CLIENTES[idx++ % CLIENTES.length]); e.style.margin = '0 ' + gap() + 'px'; belt.appendChild(e); items.push(e); }
-    function fill() { var need = wrap.clientWidth * 2 + 400, w = 0; items.forEach(function (e) { w += e._w || (e._w = itemW(e)); }); while (w < need && items.length < 80) { addOne(); var e = items[items.length - 1]; e._w = (e.width || 80) + gap() * 2; if (e.tagName === 'SPAN') e._w = e.getBoundingClientRect().width + gap() * 2; w += e._w; } }
+    function fill() { var need = wrap.clientWidth * 2 + 400, w = 0; items.forEach(function (e) { w += e._w || (e._w = itemW(e)); }); while ((w < need || items.length < CLIENTES.length) && items.length < 120) { addOne(); var e = items[items.length - 1]; e._w = (e.width || 80) + gap() * 2; if (e.tagName === 'SPAN') e._w = e.getBoundingClientRect().width + gap() * 2; w += e._w; } }
     fill(); window.addEventListener('resize', function () { items.forEach(function (e) { e.style.margin = '0 ' + gap() + 'px'; e._w = (e.width || 80) + gap() * 2; }); fill(); });
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { onscreen = es[0].isIntersecting; last = 0; }).observe(wrap);
     var down = false, px = 0, pt = 0, vel = 0, extra = 0;
